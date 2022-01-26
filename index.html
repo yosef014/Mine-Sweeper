@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="main.css">
+    <title>Mine Sweeper</title>
+</head>
+
+<body onload="init()">
+    <div class="container">
+        <center>
+            <h1 class="demotext">Mine Sweeper </h1>
+            <button class="myButton" onclick="btClicked(this, 4,3)">begginer</button>
+            <button class="myButton" onclick="btClicked(this, 8,12)">Medium</button>
+            <button class="myButton" onclick="btClicked(this, 12,30)">Expert</button>
+            <br><span class="icon" onclick="restart()">😃</span>
+
+            <label id="minutes" class="demotext">00</label>:<label id="seconds" class="demotext">00</label>
+
+            <table class="table_game">
+
+            </table>
+            <br>
+            <span class="demotext livesText">lives:</span><span class="lives demotext">💓💓💓</span>
+
+
+
+        </center>
+    </div>
+
+
+
+
+
+
+
+    <script src="main.js"></script>
+</body>
+
+</html>
