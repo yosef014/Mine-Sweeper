@@ -8,7 +8,7 @@ const flag = '🚩'
 
 
 function init() {
-    gGame = { isOn: false, isHint: false, hintNum: 3, markedCount: 0, secsPassed: 0, life: 3 }
+    gGame = { isOn: false, isHint: false, hintNum: 3, markedCount: 0, showedCount: 0, secsPassed: 0, life: 3 }
 
     buildBoard(gLevel.size)
     renderBoard()
@@ -85,13 +85,13 @@ function renderBoard() {
     checkGameOver()
 }
 
-function renderHints(){
+function renderHints() {
     var elHintsDiv = document.querySelector('.hintsDiv')
-    var strHtml =''
-    for (var i =0; i<gGame.hintNum; i++){
-        strHtml+=`<span class="demotext hint" onclick="hintClicked(this)">💡</span>`
+    var strHtml = ''
+    for (var i = 0; i < gGame.hintNum; i++) {
+        strHtml += `<span class="demotext hint" onclick="hintClicked(this)">💡</span>`
     }
-    elHintsDiv.innerHTML=strHtml
+    elHintsDiv.innerHTML = strHtml
 
 }
 
@@ -104,6 +104,9 @@ function tdClicked(thisTd, currI, currJ) {
 
 
     if (gBoard[currI][currJ].isMarked) return
+    if (!gGame.showedCount && gBoard[currI][currJ].isBoomb) {
+        restart();
+    }
 
     if (gBoard[currI][currJ].isBoomb) {
         var elTd = document.querySelector(`.cell-${currI}-${currJ}`)
@@ -111,10 +114,24 @@ function tdClicked(thisTd, currI, currJ) {
             elTd.classList.remove('close')
             elTd.classList.add('shown')
             gBoard[currI][currJ].isShown = true
+            gGame.showedCount++
         }
         renderBoard()
         if (!gGame.isHint) showAllBoombs()
-    } else {
+
+
+    } else if (gBoard[currI][currJ].neighboors && !gGame.isHint) {
+        var elTd = document.querySelector(`.cell-${currI}-${currJ}`)
+        if (elTd.classList.contains('close')) {
+            elTd.classList.remove('close')
+            elTd.classList.add('shown')
+            gBoard[currI][currJ].isShown = true
+            gGame.showedCount++
+                renderBoard()
+
+        }
+
+    } else if (!gBoard[currI][currJ].neighboors || gGame.isHint) {
         for (var i = currI - 1; i <= currI + 1; i++) {
             for (var j = currJ - 1; j <= currJ + 1; j++) {
                 if (i < 0 || i > gLevel.size - 1) continue
@@ -128,20 +145,25 @@ function tdClicked(thisTd, currI, currJ) {
                     elTd.classList.remove('close')
                     elTd.classList.add('shown')
                     gBoard[i][j].isShown = true
+                    gGame.showedCount++
+                        if (!gGame.isHint) tdClicked(elTd, i, j)
+                    console.log('לולאת שכנים')
+
+
 
                 }
 
             }
-        } renderBoard()
+        }
     }
 
+    renderBoard()
     if (gGame.isHint) {
         var timeoutID = setTimeout(tdClickedWhitHint, 3000, currI, currJ);
 
     }
 
 }
-
 
 
 function tdClickedWhitHint(currI, currJ) {
@@ -171,7 +193,8 @@ function tdClickedWhitHint(currI, currJ) {
                 }
 
             }
-        } renderBoard()
+        }
+        renderBoard()
     }
     gGame.isHint = false
 }
@@ -235,8 +258,8 @@ function gameover() {
 
 function showAllBoombs() {
     gGame.life--
-    gLevel.boombs--
-    document.querySelector('.lives').innerText = '💓'
+        gLevel.boombs--
+        document.querySelector('.lives').innerText = '💓'
     for (var i = 0; i < gGame.life - 1; i++) {
         document.querySelector('.lives').innerText += '💓'
     }
@@ -266,10 +289,10 @@ function restart() {
 }
 
 function hintClicked(elHint) {
-    if(gGame.isHint) return
+    if (gGame.isHint) return
     gGame.isHint = true
-    gGame.hintNum --
-    console.log(elHint)
+    gGame.hintNum--
+        console.log(elHint)
     elHint.style.visibility = 'hidden'
 
 }
