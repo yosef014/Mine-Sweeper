@@ -8,7 +8,7 @@ const flag = '🚩'
 
 
 function init() {
-    gGame = { isOn: false, shownCount: 0, markedCount: 0, secsPassed: 0, life: 3 }
+    gGame = { isOn: false, isHint: false, hintNum: 3, markedCount: 0, secsPassed: 0, life: 3 }
 
     buildBoard(gLevel.size)
     renderBoard()
@@ -31,7 +31,6 @@ function buildBoard(size) {
 
     }
     putBoombs()
-    console.table(gBoard)
 }
 
 function putBoombs() {
@@ -39,7 +38,6 @@ function putBoombs() {
         var emptyCells = getEmptyCell()
         var randomCell = emptyCells[getRandomInt(0, emptyCells.length)]
         gBoard[randomCell.i][randomCell.j].isBoomb = true
-        console.log(gBoard[randomCell.i][randomCell.j])
     }
 }
 
@@ -81,8 +79,20 @@ function renderBoard() {
         }
         strHtml += '</tr>'
         elBoard.innerHTML = strHtml
-        checkGameOver()
+
     }
+    renderHints()
+    checkGameOver()
+}
+
+function renderHints(){
+    var elHintsDiv = document.querySelector('.hintsDiv')
+    var strHtml =''
+    for (var i =0; i<gGame.hintNum; i++){
+        strHtml+=`<span class="demotext hint" onclick="hintClicked(this)">💡</span>`
+    }
+    elHintsDiv.innerHTML=strHtml
+
 }
 
 
@@ -91,7 +101,10 @@ function tdClicked(thisTd, currI, currJ) {
         intervalTime = setInterval(setTime, 1000);
         gGame.isOn = true
     }
+
+
     if (gBoard[currI][currJ].isMarked) return
+
     if (gBoard[currI][currJ].isBoomb) {
         var elTd = document.querySelector(`.cell-${currI}-${currJ}`)
         if (elTd.classList.contains('close')) {
@@ -100,7 +113,7 @@ function tdClicked(thisTd, currI, currJ) {
             gBoard[currI][currJ].isShown = true
         }
         renderBoard()
-        showAllBoombs()
+        if (!gGame.isHint) showAllBoombs()
     } else {
         for (var i = currI - 1; i <= currI + 1; i++) {
             for (var j = currJ - 1; j <= currJ + 1; j++) {
@@ -117,12 +130,51 @@ function tdClicked(thisTd, currI, currJ) {
                     gBoard[i][j].isShown = true
 
                 }
-                renderBoard()
+
             }
-        }
+        } renderBoard()
     }
+
+    if (gGame.isHint) {
+        var timeoutID = setTimeout(tdClickedWhitHint, 3000, currI, currJ);
+
+    }
+
 }
 
+
+
+function tdClickedWhitHint(currI, currJ) {
+    if (gBoard[currI][currJ].isBoomb) {
+        var elTd = document.querySelector(`.cell-${currI}-${currJ}`)
+        if (elTd.classList.contains('shown')) {
+            elTd.classList.remove('shown')
+            elTd.classList.add('close')
+            gBoard[currI][currJ].isShown = false
+        }
+        renderBoard()
+    } else {
+        for (var i = currI - 1; i <= currI + 1; i++) {
+            for (var j = currJ - 1; j <= currJ + 1; j++) {
+                if (i < 0 || i > gLevel.size - 1) continue
+                if (j < 0 || j > gLevel.size - 1) continue
+
+                var elTd = document.querySelector(`.cell-${i}-${j}`)
+                if (gBoard[i][j].isBoomb) continue
+                if (gBoard[i][j].isMarked) continue
+
+                if (elTd.classList.contains('shown')) {
+                    elTd.classList.remove('shown')
+                    elTd.classList.add('close')
+                    gBoard[i][j].isShown = false
+
+                }
+
+            }
+        } renderBoard()
+    }
+    gGame.isHint = false
+}
 
 function neighborsBoombsCounter(currI, currJ) {
     var boombCounter = 0
@@ -143,9 +195,10 @@ function btClicked(elBt, size, boombsNumber) {
     gLevel.size = size
     gLevel.boombs = boombsNumber
     document.querySelector('table').innerHTML = ''
-    init()
+    restart()
 
 }
+
 function putFlag(elTd, i, j) {
     window.event.preventDefault()
     if (!gGame.isOn) {
@@ -207,9 +260,19 @@ function restart() {
     minutesLabel.innerText = '00'
     secondsLabel.innerText = '00'
     document.querySelector('.icon').innerText = '😀'
+    document.querySelector('.lives').innerText = '💓💓💓'
+
     init()
 }
 
+function hintClicked(elHint) {
+    if(gGame.isHint) return
+    gGame.isHint = true
+    gGame.hintNum --
+    console.log(elHint)
+    elHint.style.visibility = 'hidden'
+
+}
 
 
 
